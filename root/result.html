@@ -1,0 +1,298 @@
+<!-- 后端写的web页面果然很烂 -->
+<!DOCTYPE html>
+
+<html lang="zh">
+<title>What Should I Do</title>
+
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+        .bg {
+            margin: auto;
+            background: url('image/background.png');
+            height: 95vh;
+            text-align: center;
+            opacity: 0.75;
+        }
+
+        .bg-blur {
+            float: left;
+            width: 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            -webkit-filter: blur(15px);
+            -moz-filter: blur(15px);
+            -o-filter: blur(15px);
+            -ms-filter: blur(15px);
+            filter: blur(15px);
+        }
+
+        .back-button-div {
+            position: absolute;
+            left: 30px;
+            top: 30px;
+        }
+
+        .container {
+            display: flex;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .main_box {
+
+            width: 50vw;
+            min-height: 120px;
+            /* max-height: 300px; */
+            /* _height: 120px; */
+
+            padding: 15px 35px 20px 35px;
+            outline: 0;
+            border: 1px solid #48AFFD;
+            border-radius: 30px;
+            word-wrap: break-word;
+            background-color: #FFFFFF;
+            overflow-x: hidden;
+            overflow-y: auto;
+            box-shadow: 2px 2px 5px #656B79;
+        }
+
+        #company {
+            position: relative;
+            font-style: italic;
+            font-size: 26px;
+            font-family: "楷体", "楷体_GB2312";
+            color: #48AFFD;
+            font-weight: 500;
+            line-height: 0px;
+            margin-bottom: 16px;
+        }
+
+        #post-name {
+            top: -5px;
+            position: relative;
+            font-size: 32px;
+            color: rgba(0, 0, 0, 0.8);
+            font-weight: 500;
+            line-height: 40px;
+            margin-bottom: 32px;
+        }
+
+        #detail {
+            top: -15px;
+            position: relative;
+            font-size: 17px;
+            color: rgba(0, 0, 0, 0.6);
+            line-height: 30px;
+            white-space: pre-line;
+        }
+
+        .next-page-button-div {
+            right: -10px;
+            bottom: -10px;
+            position: absolute;
+        }
+
+        .next-page-button {
+            display: flex;
+            padding: 11px 33px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-size: 25px;
+            color: white;
+            background: #48AFFD;
+            transition: 1s;
+            box-shadow: 6px 6px 0 black;
+            transform: skewX(-15deg);
+            border: none;
+        }
+
+        .next-page-button:focus {
+            outline: none;
+        }
+
+        .next-page-button:hover {
+            transition: 0.5s;
+            box-shadow: 10px 10px 0 #FBC638;
+        }
+
+        .next-page-button .second {
+            transition: 0.5s;
+            margin-right: 0px;
+        }
+
+        .next-page-button:hover .second {
+            transition: 0.5s;
+            margin-right: 45px;
+        }
+
+        .span {
+            transform: skewX(15deg)
+        }
+
+        .second {
+            width: 20px;
+            margin-left: 30px;
+            position: relative;
+            top: 12%;
+        }
+
+        .one {
+            transition: 0.4s;
+            transform: translateX(-60%);
+        }
+
+        .two {
+            transition: 0.5s;
+            transform: translateX(-30%);
+        }
+
+        .next-page-button:hover .three {
+            animation: color_anim 1s infinite 0.2s;
+        }
+
+        .next-page-button:hover .one {
+            transform: translateX(0%);
+            animation: color_anim 1s infinite 0.6s;
+        }
+
+        .next-page-button:hover .two {
+            transform: translateX(0%);
+            animation: color_anim 1s infinite 0.4s;
+        }
+
+        @keyframes color_anim {
+            0% {
+                fill: white;
+            }
+
+            50% {
+                fill: #FBC638;
+            }
+
+            100% {
+                fill: white;
+            }
+        }
+
+        #back-button {
+            display: flex;
+            height: 50px;
+            width: 160px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            letter-spacing: 1px;
+            transition: all 0.2s linear;
+            cursor: pointer;
+            border: none;
+            background: #00000000;
+        }
+
+        #back-button>svg {
+            margin-right: 5px;
+            margin-left: 5px;
+            font-size: 20px;
+            transition: all 0.4s ease-in;
+        }
+
+        #back-button:hover>svg {
+            font-size: 1.2em;
+            transform: translateX(-5px)
+        }
+    </style>
+
+</head>
+
+<body onload="nextInformation();">
+    <div class="bg bg-blur">
+    </div>
+    <div class="back-button-div">
+        <button id="back-button" onclick="window.location.href='/WSID/'">
+            <svg height="96px" width="96px" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1024 1024">
+                <path
+                    d="M874.690416 495.52477c0 11.2973-9.168824 20.466124-20.466124 20.466124l-604.773963 0 188.083679 188.083679c7.992021 7.992021 7.992021 20.947078 0 28.939099-4.001127 3.990894-9.240455 5.996574-14.46955 5.996574-5.239328 0-10.478655-1.995447-14.479783-5.996574l-223.00912-223.00912c-3.837398-3.837398-5.996574-9.046027-5.996574-14.46955 0-5.433756 2.159176-10.632151 5.996574-14.46955l223.019353-223.029586c7.992021-7.992021 20.957311-7.992021 28.949332 0 7.992021 8.002254 7.992021 20.957311 0 28.949332l-188.073446 188.073446 604.753497 0C865.521592 475.058646 874.690416 484.217237 874.690416 495.52477z">
+                </path>
+            </svg>
+            <span style="font-size:32px">BACK</span>
+        </button>
+    </div>
+
+
+    <div class="container">
+        <div class="main_box">
+            <p id='company'>
+            </p>
+            <p id='post-name'>
+            </p>
+            <p id='detail'>
+            </p>
+        </div>
+        <div class="next-page-button-div">
+            <button class="next-page-button" onclick=" nextInformation()">
+                <span class="span">NEXT</span>
+                <span class="second">
+                    <svg width="50px" height="20px" viewBox="0 0 66 43" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <g id="arrow" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <path class="one"
+                                d="M40.1543933,3.89485454 L43.9763149,0.139296592 C44.1708311,-0.0518420739 44.4826329,-0.0518571125 44.6771675,0.139262789 L65.6916134,20.7848311 C66.0855801,21.1718824 66.0911863,21.8050225 65.704135,22.1989893 C65.7000188,22.2031791 65.6958657,22.2073326 65.6916762,22.2114492 L44.677098,42.8607841 C44.4825957,43.0519059 44.1708242,43.0519358 43.9762853,42.8608513 L40.1545186,39.1069479 C39.9575152,38.9134427 39.9546793,38.5968729 40.1481845,38.3998695 C40.1502893,38.3977268 40.1524132,38.395603 40.1545562,38.3934985 L56.9937789,21.8567812 C57.1908028,21.6632968 57.193672,21.3467273 57.0001876,21.1497035 C56.9980647,21.1475418 56.9959223,21.1453995 56.9937605,21.1432767 L40.1545208,4.60825197 C39.9574869,4.41477773 39.9546013,4.09820839 40.1480756,3.90117456 C40.1501626,3.89904911 40.1522686,3.89694235 40.1543933,3.89485454 Z"
+                                fill="#FFFFFF"></path>
+                            <path class="two"
+                                d="M20.1543933,3.89485454 L23.9763149,0.139296592 C24.1708311,-0.0518420739 24.4826329,-0.0518571125 24.6771675,0.139262789 L45.6916134,20.7848311 C46.0855801,21.1718824 46.0911863,21.8050225 45.704135,22.1989893 C45.7000188,22.2031791 45.6958657,22.2073326 45.6916762,22.2114492 L24.677098,42.8607841 C24.4825957,43.0519059 24.1708242,43.0519358 23.9762853,42.8608513 L20.1545186,39.1069479 C19.9575152,38.9134427 19.9546793,38.5968729 20.1481845,38.3998695 C20.1502893,38.3977268 20.1524132,38.395603 20.1545562,38.3934985 L36.9937789,21.8567812 C37.1908028,21.6632968 37.193672,21.3467273 37.0001876,21.1497035 C36.9980647,21.1475418 36.9959223,21.1453995 36.9937605,21.1432767 L20.1545208,4.60825197 C19.9574869,4.41477773 19.9546013,4.09820839 20.1480756,3.90117456 C20.1501626,3.89904911 20.1522686,3.89694235 20.1543933,3.89485454 Z"
+                                fill="#FFFFFF"></path>
+                            <path class="three"
+                                d="M0.154393339,3.89485454 L3.97631488,0.139296592 C4.17083111,-0.0518420739 4.48263286,-0.0518571125 4.67716753,0.139262789 L25.6916134,20.7848311 C26.0855801,21.1718824 26.0911863,21.8050225 25.704135,22.1989893 C25.7000188,22.2031791 25.6958657,22.2073326 25.6916762,22.2114492 L4.67709797,42.8607841 C4.48259567,43.0519059 4.17082418,43.0519358 3.97628526,42.8608513 L0.154518591,39.1069479 C-0.0424848215,38.9134427 -0.0453206733,38.5968729 0.148184538,38.3998695 C0.150289256,38.3977268 0.152413239,38.395603 0.154556228,38.3934985 L16.9937789,21.8567812 C17.1908028,21.6632968 17.193672,21.3467273 17.0001876,21.1497035 C16.9980647,21.1475418 16.9959223,21.1453995 16.9937605,21.1432767 L0.15452076,4.60825197 C-0.0425130651,4.41477773 -0.0453986756,4.09820839 0.148075568,3.90117456 C0.150162624,3.89904911 0.152268631,3.89694235 0.154393339,3.89485454 Z"
+                                fill="#FFFFFF"></path>
+                        </g>
+                    </svg>
+                </span>
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        var last_post_id = -1;
+        var now_post_id = -1;
+        function nextInformation() {
+
+            if (document.getElementById("post-name").innerHTML == "该关键词没有更多数据") {
+                window.location.href = '/WSID/'
+            }
+            else {
+                var httpRequest = new XMLHttpRequest();
+                httpRequest.open('GET', 'next?key={{.}}', true);
+                httpRequest.send();
+
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+                        var json = httpRequest.responseText;
+                        var obj = JSON.parse(json);
+                        if (obj.status == "ok" && (obj.id != now_post_id || now_post_id != last_post_id)) {
+                            document.getElementById("company").innerHTML = obj.company;
+                            document.getElementById("post-name").innerHTML = obj.post_name;
+                            document.getElementById("detail").innerHTML = obj.require_text;
+                            last_post_id = now_post_id
+                            now_post_id = obj.id
+                        } else {
+                            document.getElementById("company").innerHTML = "";
+                            document.getElementById("post-name").innerHTML = "";
+                            document.getElementById("detail").innerHTML = "";
+                            document.getElementById("post-name").innerHTML = "该关键词没有更多数据";
+                        }
+                    }
+
+                };
+            }
+
+        }
+
+
+    </script>
+</body>
+
+</html>
