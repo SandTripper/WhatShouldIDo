@@ -7,6 +7,15 @@
 <head>
     <meta charset="utf-8">
     <style type="text/css">
+        body {
+            overflow-y: hidden;
+        }
+
+        footer {
+            text-align: center;
+            color: #999;
+        }
+
         .bg {
             margin: auto;
             background: url('image/background.png');
@@ -304,6 +313,8 @@
                             document.getElementById("detail").innerHTML = "";
                             document.getElementById("post-name").innerHTML = "该关键词没有更多数据";
                         }
+                        document.getElementById("totTimes").innerHTML = "总查询数：" + obj.queryTimes + " 次";
+
                         var h = document.getElementById("main-container").offsetHeight;
                         document.getElementById("expend-btn").style.height = h + "px";
                         document.getElementById("expend-btn").style.right = (parseInt(h) / 7.2).toString() + "px";
@@ -322,6 +333,11 @@
         }
 
     </script>
+
 </body>
+
+<footer>
+    <p id="totTimes">总查询数：次</p>
+</footer>
 
 </html>

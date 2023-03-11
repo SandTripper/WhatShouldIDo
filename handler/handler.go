@@ -5,14 +5,18 @@ import (
 	"WhatShouldIDo/mcache"
 	"WhatShouldIDo/mframe"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +29,12 @@ var GlobalDbLock sync.Mutex
 var KeyCache *mcache.LRUCache
 var SessionCache *mcache.LRUCache
 
+type Statistical struct {
+	QueryTimes int64 `json:"QueryTimes"`
+}
+
+var StatisticalData Statistical
+
 func init() {
 	// 实例化键缓存
 	KeyCache = mcache.NewCache(config.KeyCacheMaxSize)
@@ -36,6 +46,28 @@ func init() {
 	var err error
 	GlobalDb, err = sql.Open("mysql", config.DataLoginUsername+":"+config.DataLoginPassword+"@/what_should_i_do?charset=utf8")
 	checkError(err)
+
+	// 打开统计json文件
+	statistical_data_file, err := os.Open("statistical_data.json")
+	if err != nil {
+		log.Panic(err)
+	}
+	defer statistical_data_file.Close()
+	byteValue, _ := ioutil.ReadAll(statistical_data_file)
+	json.Unmarshal([]byte(byteValue), &StatisticalData) //解析json文件
+	// 每1分钟执行一次统计数据持久化
+	ticker := time.NewTicker(1 * time.Minute)
+	go func() {
+		for range ticker.C {
+			b, _ := json.Marshal(StatisticalData)
+			file, err := os.OpenFile("statistical_data.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+			if err != nil {
+				log.Panic(err)
+			}
+			file.Write(b)
+			file.Close()
+		}
+	}()
 }
 
 // 显示首页
@@ -64,11 +96,14 @@ func ShowResultPage(c *Context) {
 
 // 显示下一条信息
 func Next(c *Context) {
+	atomic.AddInt64(&StatisticalData.QueryTimes, 1)
+
 	data, err := doNext(c)
 
 	if err != nil { //出现错误
 		data = make(map[string]interface{})
 		data["status"] = "none"
+		data["queryTimes"] = StatisticalData.QueryTimes
 		c.JSON(http.StatusOK, data)
 		log.Error(err)
 		return
@@ -76,9 +111,12 @@ func Next(c *Context) {
 	if data == nil { //没有数据
 		data = make(map[string]interface{})
 		data["status"] = "none"
+		data["queryTimes"] = StatisticalData.QueryTimes
 		c.JSON(http.StatusOK, data)
 		return
 	}
+
+	data["queryTimes"] = StatisticalData.QueryTimes
 	c.JSON(http.StatusOK, data) //返回正常数据
 }
 
