@@ -61,6 +61,17 @@ func (sm *SessionManager) getSessionId(req *http.Request) (string, error) {
 	return c.Value, nil
 }
 
+func (sm *SessionManager) ExistsSessionId(req *http.Request) bool {
+	sessionId, _ := sm.getSessionId(req)
+	if len(sessionId) > 0 { //请求中已有sessionId
+		data, _ := sm.provider.getAll(sessionId)
+		if data != nil { //存在sessionId和数据
+			return true
+		}
+	}
+	return false
+}
+
 // 创建session
 func (sm *SessionManager) Create(writer *http.ResponseWriter, req *http.Request, data map[string]interface{}) error {
 	sessionId, _ := sm.getSessionId(req)
@@ -117,7 +128,7 @@ func (sm *SessionManager) GetAll(req *http.Request) (map[string]interface{}, err
 }
 
 // 设置session键值
-func (sm *SessionManager) Set(req *http.Request, key string, value string) error {
+func (sm *SessionManager) Set(req *http.Request, key string, value interface{}) error {
 	sessionId, err := sm.getSessionId(req)
 	if err != nil {
 		return errors.New("length of sessionId is 0")

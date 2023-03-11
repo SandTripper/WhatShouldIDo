@@ -46,12 +46,12 @@ func (mp *MemoryProvider) get(sessionId, key string) (interface{}, error) { //�
 	mp.sessionsLock.RLock()
 	defer mp.sessionsLock.RUnlock()
 	if _, ok := mp.sessions[sessionId]; !ok { //不存在sessionId
-		return "", errors.New("sessionId not found")
+		return nil, errors.New("sessionId not found")
 	}
 	if v, ok := mp.sessions[sessionId][key]; ok {
 		return v, nil
 	} else { //不存在键
-		return "", errors.New("key not found")
+		return nil, errors.New("key not found")
 	}
 }
 func (mp *MemoryProvider) getAll(sessionId string) (map[string]interface{}, error) { //读取session所有键值对

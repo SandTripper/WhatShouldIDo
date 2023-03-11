@@ -4,6 +4,7 @@ import (
 	"WhatShouldIDo/handler"
 	"WhatShouldIDo/mframe"
 	"fmt"
+	"math/rand"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -51,6 +52,9 @@ func configLogger() {
 }
 
 func main() {
+
+	rand.Seed(time.Now().Unix())
+
 	//配置日志系统
 	configLogger()
 

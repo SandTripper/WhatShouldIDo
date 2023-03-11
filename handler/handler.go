@@ -2,10 +2,16 @@ package handler
 
 import (
 	"WhatShouldIDo/config"
+	"WhatShouldIDo/mcache"
 	"WhatShouldIDo/mframe"
 	"database/sql"
+	"errors"
+	"fmt"
+	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -16,10 +22,19 @@ type Context = mframe.Context
 
 var GlobalDb *sql.DB
 var GlobalDbLock sync.Mutex
+var KeyCache *mcache.LRUCache
+var SessionCache *mcache.LRUCache
 
 func init() {
+	// 实例化键缓存
+	KeyCache = mcache.NewCache(config.KeyCacheMaxSize)
+
+	// 实例化查询缓存
+	SessionCache = mcache.NewCache(config.SessionCacheMaxSize)
+
+	//连接数据库
 	var err error
-	GlobalDb, err = sql.Open("mysql", config.DataLoginUsername+":"+config.DataLoginUsername+"@/what_should_i_do?charset=utf8")
+	GlobalDb, err = sql.Open("mysql", config.DataLoginUsername+":"+config.DataLoginPassword+"@/what_should_i_do?charset=utf8")
 	checkError(err)
 }
 
@@ -31,36 +46,40 @@ func ShowIndexPage(c *Context) {
 
 // 显示查询结果页
 func ShowResultPage(c *Context) {
-	err := c.HTMLFT(http.StatusOK, "root/result.html", c.PostForm("key"))
+	key := url.QueryEscape(c.PostForm("key"))
+	var queryid uint64
+	for {
+		queryid = rand.Uint64()
+		if SessionCache.Get(fmt.Sprint(queryid)) == nil {
+			break
+		}
+	}
+	err := c.HTMLFT(http.StatusOK, "root/result.html", struct {
+		Key     string
+		Queryid string
+	}{key, fmt.Sprint(queryid)})
+
 	checkServerUnavailableErr(c, err)
 }
 
-// 显示查询结果页
+// 显示下一条信息
 func Next(c *Context) {
-	GlobalDbLock.Lock()
-	defer GlobalDbLock.Unlock()
-	key := "%" + c.PostForm("key") + "%"
-	var id, company, require_text, post_name string
-	err := GlobalDb.QueryRow(`SELECT id,recruitment_unit,post_name,require_text FROM job_information_tb WHERE post_name like ?  and id >= (SELECT FLOOR( MAX(id) * RAND()) FROM job_information_tb WHERE post_name like ? ) ORDER BY id LIMIT 1;`, key, key).Scan(&id, &company, &post_name, &require_text)
+	data, err := doNext(c)
 
-	data := make(map[string]interface{})
-	switch {
-	case err == sql.ErrNoRows: //不存在结果
-		data["status"] = "error"
+	if err != nil { //出现错误
+		data = make(map[string]interface{})
+		data["status"] = "none"
 		c.JSON(http.StatusOK, data)
-		return
-	case err != nil: //查询出现错误
-		serviceUnavailable(c)
 		log.Error(err)
 		return
-	default:
-		data["status"] = "ok"
-		data["id"] = id
-		data["company"] = company
-		data["post_name"] = post_name
-		data["require_text"] = require_text
-		c.JSON(http.StatusOK, data)
 	}
+	if data == nil { //没有数据
+		data = make(map[string]interface{})
+		data["status"] = "none"
+		c.JSON(http.StatusOK, data)
+		return
+	}
+	c.JSON(http.StatusOK, data) //返回正常数据
 }
 
 // 返回图片
@@ -72,6 +91,129 @@ func ShowImage(c *Context) {
 		c.Data(http.StatusOK, data)
 	} else {
 		c.String(http.StatusNotFound, "404 not found")
+	}
+}
+
+// 进行数据的查询工作，返回查询到的值，无结果返回nil
+func doNext(c *Context) (map[string]interface{}, error) {
+	key := c.PostForm("key")
+	key = strings.ToLower(key)
+
+	var lst []interface{} //存储查询到的结果集
+
+	res := KeyCache.Get(key)
+
+	if res != nil { //缓存中存在
+		lst = res.([]interface{})
+	} else { //缓存中不存在
+
+		GlobalDbLock.Lock()
+
+		rows, err := GlobalDb.Query(`SELECT id FROM job_information_tb WHERE post_name like ? `, "%"+key+"%") //从数据库中查询所有匹配数据
+
+		if err != nil {
+			GlobalDbLock.Unlock()
+			return nil, err
+		}
+
+		defer rows.Close()
+
+		lst = make([]interface{}, 0)
+		for rows.Next() { //提取所有匹配的id存入lst
+			var id int
+			err = rows.Scan(&id)
+
+			if err != nil {
+				GlobalDbLock.Unlock()
+				return nil, err
+			}
+			lst = append(lst, id)
+		}
+
+		GlobalDbLock.Unlock()
+
+		KeyCache.Replace(key, lst) //存入缓存
+	}
+
+	if len(lst) <= 0 { //无匹配结果
+		return nil, nil
+	}
+
+	queryid := c.PostForm("queryid")
+	if queryid == "" { //不带queryid，非法查询
+		return nil, errors.New("invalid query")
+	}
+
+	var nowIndex, step, totQuery int
+	var sessionData map[string]int
+
+	res1 := SessionCache.Get(queryid)
+	if res1 == nil { //不存在session，创建
+
+		sessionData = make(map[string]int)
+
+		//随机生成nowIndex和step
+		nowIndex = rand.Int() % len(lst)
+		step = findCoprimeNumber(len(lst))
+		totQuery = 0
+
+		sessionData["nowIndex"] = nowIndex
+		sessionData["step"] = step
+		sessionData["totQuery"] = totQuery
+
+		//存入缓存
+		SessionCache.Replace(queryid, sessionData)
+	} else { //存在session，读取数据
+		sessionData = res1.(map[string]int)
+
+		nowIndex = sessionData["nowIndex"]
+		step = sessionData["step"]
+		totQuery = sessionData["totQuery"]
+	}
+
+	if totQuery >= len(lst) { //已全部读完
+		return nil, nil
+	}
+
+	nowIndex = (nowIndex + step) % len(lst) //更新步数
+	totQuery += 1                           //更新获取次数
+
+	//将更新写入缓存
+	sessionData["nowIndex"] = nowIndex
+	sessionData["totQuery"] = totQuery
+
+	var recruitment_unit, post_name, require_text string
+
+	GlobalDbLock.Lock()
+	defer GlobalDbLock.Unlock()
+
+	err := GlobalDb.QueryRow(`SELECT recruitment_unit,post_name,require_text FROM job_information_tb WHERE id = ?`, lst[nowIndex]).Scan(&recruitment_unit, &post_name, &require_text)
+
+	if err != nil { //查询出现错误
+		return nil, err
+	}
+	data := make(map[string]interface{})
+	data["status"] = "ok"
+	data["company"] = recruitment_unit
+	data["post_name"] = post_name
+	data["require_text"] = require_text
+	return data, nil
+}
+
+// 求gcd
+func gcd(a, b uint) uint {
+	if b > 0 {
+		return gcd(b, a%b)
+	}
+	return a
+}
+
+func findCoprimeNumber(x int) int {
+	for {
+		res := rand.Int()%x + 1
+		if gcd(uint(x), uint(res)) == 1 {
+			return res
+		}
 	}
 }
 

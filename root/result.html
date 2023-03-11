@@ -256,8 +256,6 @@
 
 
     <script>
-        var last_post_id = -1;
-        var now_post_id = -1;
         function nextInformation() {
 
             if (document.getElementById("post-name").innerHTML == "该关键词没有更多数据") {
@@ -265,19 +263,17 @@
             }
             else {
                 var httpRequest = new XMLHttpRequest();
-                httpRequest.open('GET', 'next?key={{.}}', true);
+                httpRequest.open('GET', 'next?key={{.Key}}&queryid={{.Queryid}}', true);
                 httpRequest.send();
 
                 httpRequest.onreadystatechange = function () {
                     if (httpRequest.readyState == 4 && httpRequest.status == 200) {
                         var json = httpRequest.responseText;
                         var obj = JSON.parse(json);
-                        if (obj.status == "ok" && (obj.id != now_post_id || now_post_id != last_post_id)) {
+                        if (obj.status == "ok") {
                             document.getElementById("company").innerHTML = obj.company;
                             document.getElementById("post-name").innerHTML = obj.post_name;
                             document.getElementById("detail").innerHTML = obj.require_text;
-                            last_post_id = now_post_id
-                            now_post_id = obj.id
                         } else {
                             document.getElementById("company").innerHTML = "";
                             document.getElementById("post-name").innerHTML = "";
@@ -285,7 +281,6 @@
                             document.getElementById("post-name").innerHTML = "该关键词没有更多数据";
                         }
                     }
-
                 };
             }
 
