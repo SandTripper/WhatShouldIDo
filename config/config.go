@@ -2,7 +2,7 @@ package config
 
 const RequestLimitPerSecond = 6 //同一ip每秒最多请求次数
 
-const RequestLimitPerDay = 200 //同一ip每天最多请求次数
+const RequestLimitPerDay = 1024 //同一ip每天最多请求次数
 
 const DataLoginUsername = "WSID-READ-ONLY" //数据库登录用户名
 
