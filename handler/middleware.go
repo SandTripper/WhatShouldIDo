@@ -2,16 +2,18 @@ package handler
 
 import (
 	"WhatShouldIDo/config"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const requestLimitPerSecond = config.RequestLimitPerSecond //同一ip每秒最多请求次数
+var requestLimitPerSecond = config.RequestLimitPerSecond //同一ip每秒最多请求次数
 
-const requestLimitPerDay = config.RequestLimitPerDay //同一ip每天最多请求次数
+var requestLimitPerDay = config.RequestLimitPerDay //同一ip每天最多请求次数
 
 var ip_datas map[string]map[string]uint
+var ip_datas_rwlock sync.Mutex
 
 func init() {
 	ip_datas = make(map[string]map[string]uint)
@@ -24,6 +26,8 @@ func RecordAccessLog(c *Context) {
 
 // 检查并限制访问次数
 func RequestRateLimit(c *Context) {
+	ip_datas_rwlock.Lock()
+	defer ip_datas_rwlock.Unlock()
 	currentTime := uint(time.Now().Unix())
 	if _, ok := ip_datas[c.IpAddress]; !ok {
 		ip_datas[c.IpAddress] = make(map[string]uint)

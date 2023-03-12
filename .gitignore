@@ -3,3 +3,4 @@ sandtripper.cn_bundle.crt
 sandtripper.cn.key
 *.sql
 WhatShouldIDo
+nohup.out

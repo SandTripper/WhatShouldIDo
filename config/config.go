@@ -7,9 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var RequestLimitPerSecond int //同一ip每秒最多请求次数
+var RequestLimitPerSecond uint //同一ip每秒最多请求次数
 
-var RequestLimitPerDay int //同一ip每天最多请求次数
+var RequestLimitPerDay uint //同一ip每天最多请求次数
 
 var DataLoginUsername string //数据库登录用户名
 
@@ -19,10 +19,14 @@ var KeyCacheMaxSize int //查询缓存条数
 
 var SessionCacheMaxSize int //用户缓存条数
 
-type configData struct {
-	RequestLimitPerSecond int
+var LogFileRotationTime int64 //日志文件时间间隔
 
-	RequestLimitPerDay int
+var LogFileLeastNum int //保留日志文件的数量
+
+type configData struct {
+	RequestLimitPerSecond uint
+
+	RequestLimitPerDay uint
 
 	DataLoginUsername string
 
@@ -31,6 +35,10 @@ type configData struct {
 	KeyCacheMaxSize int
 
 	SessionCacheMaxSize int
+
+	LogFileRotationTime int64
+
+	LogFileLeastNum int
 }
 
 func init() {
@@ -47,4 +55,6 @@ func init() {
 	DataLoginPassword = cd.DataLoginPassword
 	KeyCacheMaxSize = cd.KeyCacheMaxSize
 	SessionCacheMaxSize = cd.SessionCacheMaxSize
+	LogFileRotationTime = cd.LogFileRotationTime
+	LogFileLeastNum = cd.LogFileLeastNum
 }

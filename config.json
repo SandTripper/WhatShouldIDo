@@ -1,8 +1,8 @@
 {
     "__RequestLimitPerSecond": "同一ip每秒最多请求次数",
-    "RequestLimitPerSecond": 6,
+    "RequestLimitPerSecond": 1000000,
     "__RequestLimitPerDay": "同一ip每天最多请求次数",
-    "RequestLimitPerDay": 1024,
+    "RequestLimitPerDay": 100000024,
     "__DataLoginUsername": "数据库登录用户名",
     "DataLoginUsername": "WSID-READ-ONLY",
     "__DataLoginPassword": "数据库登录密码",
@@ -10,5 +10,9 @@
     "__KeyCacheMaxSize": "查询缓存条数",
     "KeyCacheMaxSize": 1024,
     "__SessionCacheMaxSize": "用户缓存条数",
-    "SessionCacheMaxSize": 10000
+    "SessionCacheMaxSize": 10000,
+    "__LogFileRotationTime": "日志文件时间间隔",
+    "LogFileRotationTime": 86400,
+    "__LogFileLeastNum": "保留日志文件的数量",
+    "LogFileLeastNum": 10
 }

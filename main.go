@@ -1,6 +1,7 @@
 package main
 
 import (
+	"WhatShouldIDo/config"
 	"WhatShouldIDo/handler"
 	"WhatShouldIDo/mframe"
 	"fmt"
@@ -32,7 +33,7 @@ func configLocalFileSystemLogger(logPath string, logFileName string, rotationTim
 
 // 配置日志系统
 func configLogger() {
-	configLocalFileSystemLogger("./logs", "ServerLog", time.Hour*24, 3)
+	configLocalFileSystemLogger("./logs", "ServerLog", time.Second*time.Duration(config.LogFileRotationTime), uint(config.LogFileLeastNum))
 
 	//配置格式
 	log.SetFormatter(&nested.Formatter{
@@ -52,7 +53,6 @@ func configLogger() {
 }
 
 func main() {
-
 	rand.Seed(time.Now().Unix())
 
 	//配置日志系统

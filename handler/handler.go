@@ -139,18 +139,18 @@ func doNext(c *Context) (map[string]interface{}, error) {
 
 	var lst []interface{} //存储查询到的结果集
 
+	GlobalDbLock.Lock()
+	defer GlobalDbLock.Unlock()
+
 	res := KeyCache.Get(key)
 
 	if res != nil { //缓存中存在
 		lst = res.([]interface{})
 	} else { //缓存中不存在
 
-		GlobalDbLock.Lock()
-
 		rows, err := GlobalDb.Query(`SELECT id FROM job_information_tb WHERE post_name like ? `, "%"+key+"%") //从数据库中查询所有匹配数据
 
 		if err != nil {
-			GlobalDbLock.Unlock()
 			return nil, err
 		}
 
@@ -162,13 +162,10 @@ func doNext(c *Context) (map[string]interface{}, error) {
 			err = rows.Scan(&id)
 
 			if err != nil {
-				GlobalDbLock.Unlock()
 				return nil, err
 			}
 			lst = append(lst, id)
 		}
-
-		GlobalDbLock.Unlock()
 
 		KeyCache.Replace(key, lst) //存入缓存
 	}
@@ -221,9 +218,6 @@ func doNext(c *Context) (map[string]interface{}, error) {
 	sessionData["totQuery"] = totQuery
 
 	var recruitment_unit, post_name, require_text string
-
-	GlobalDbLock.Lock()
-	defer GlobalDbLock.Unlock()
 
 	err := GlobalDb.QueryRow(`SELECT recruitment_unit,post_name,require_text FROM job_information_tb WHERE id = ?`, lst[nowIndex]).Scan(&recruitment_unit, &post_name, &require_text)
 
