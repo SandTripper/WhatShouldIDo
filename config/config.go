@@ -1,13 +1,50 @@
 package config
 
-const RequestLimitPerSecond = 6 //同一ip每秒最多请求次数
+import (
+	"encoding/json"
+	"os"
 
-const RequestLimitPerDay = 1024 //同一ip每天最多请求次数
+	log "github.com/sirupsen/logrus"
+)
 
-const DataLoginUsername = "WSID-READ-ONLY" //数据库登录用户名
+var RequestLimitPerSecond int //同一ip每秒最多请求次数
 
-const DataLoginPassword = "123456" //数据库登录密码
+var RequestLimitPerDay int //同一ip每天最多请求次数
 
-const KeyCacheMaxSize = 1024 //查询缓存条数
+var DataLoginUsername string //数据库登录用户名
 
-const SessionCacheMaxSize = 10000 //用户缓存条数
+var DataLoginPassword string //数据库登录密码
+
+var KeyCacheMaxSize int //查询缓存条数
+
+var SessionCacheMaxSize int //用户缓存条数
+
+type configData struct {
+	RequestLimitPerSecond int
+
+	RequestLimitPerDay int
+
+	DataLoginUsername string
+
+	DataLoginPassword string
+
+	KeyCacheMaxSize int
+
+	SessionCacheMaxSize int
+}
+
+func init() {
+	var cd configData
+	byteValue, err := os.ReadFile("config.json")
+	if err != nil {
+		log.Panic(err)
+	}
+	json.Unmarshal([]byte(byteValue), &cd)
+
+	RequestLimitPerSecond = cd.RequestLimitPerSecond
+	RequestLimitPerDay = cd.RequestLimitPerDay
+	DataLoginUsername = cd.DataLoginUsername
+	DataLoginPassword = cd.DataLoginPassword
+	KeyCacheMaxSize = cd.KeyCacheMaxSize
+	SessionCacheMaxSize = cd.SessionCacheMaxSize
+}
